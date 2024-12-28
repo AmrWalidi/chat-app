@@ -1,3 +1,4 @@
+import 'package:chat_app/services/auth/auth_service.dart';
 import 'package:chat_app/components/my_button.dart';
 import 'package:chat_app/components/my_text_field.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,28 @@ class Register extends StatelessWidget {
 
   final void Function()? navigateToLoginPage;
 
-  void register() {}
+  void register(BuildContext context) async {
+    final authService = AuthService();
+
+    if (_confirmPasswordController.text == _passwordController.text) {
+      try {
+        authService.signUpWithEmailPassword(
+            _emailController.text, _passwordController.text);
+      } catch (e) {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  title: Text(e.toString()),
+                ));
+      }
+    } else {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: Text("Şifre eşleşmiyor"),
+              ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +71,7 @@ class Register extends StatelessWidget {
                 obscureText: true,
                 controller: _confirmPasswordController),
             const SizedBox(height: 25),
-            MyButton(text: "kayıt ol", onTap: register),
+            MyButton(text: "kayıt ol", onTap: () => register(context)),
             const SizedBox(height: 25),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -63,7 +85,8 @@ class Register extends StatelessWidget {
                   child: Text(
                     "Hemen giriş yap",
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.grey.shade500),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade500),
                   ),
                 )
               ],

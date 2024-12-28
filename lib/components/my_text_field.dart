@@ -4,7 +4,8 @@ class MyTextField extends StatelessWidget {
   const MyTextField({
     super.key,
     required this.hinText,
-    required this.obscureText, required this.controller,
+    required this.obscureText,
+    required this.controller,
   });
 
   final String hinText;

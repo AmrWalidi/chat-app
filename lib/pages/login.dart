@@ -1,6 +1,8 @@
+import 'package:chat_app/services/auth/auth_service.dart';
 import 'package:chat_app/components/my_button.dart';
 import 'package:chat_app/components/my_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 class Login extends StatelessWidget {
   Login({super.key, required this.navigateToRegisterPage});
@@ -10,7 +12,25 @@ class Login extends StatelessWidget {
 
   final void Function()? navigateToRegisterPage;
 
-  void login() {}
+  void login(BuildContext context) async {
+    final authService = AuthService();
+
+    try {
+      authService.signInWithEmailPassword(
+          _emailController.text, _passwordController.text);
+    } catch (e) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: Text(e.toString()),
+              ));
+    }
+  }
+
+  void googleSignIn() async {
+    final authService = AuthService();
+    authService.signInWithGoogle();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +62,12 @@ class Login extends StatelessWidget {
                 obscureText: true,
                 controller: _passwordController),
             const SizedBox(height: 25),
-            MyButton(text: "Giriş yap", onTap: login),
+            MyButton(text: "Giriş yap", onTap: () => login(context)),
+            const SizedBox(height: 10),
+            SignInButton(
+              Buttons.Google, // Pre-styled Google button
+              onPressed: googleSignIn,
+            ),
             const SizedBox(height: 25),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
