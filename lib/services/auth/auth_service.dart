@@ -1,3 +1,4 @@
+import 'package:chat_app/models/chater.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -16,10 +17,12 @@ class AuthService {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
 
-      _firestore.collection("Users").doc(userCredential.user!.uid).set({
-        'uid': userCredential.user!.uid,
-        "email": email,
-      });
+      Chater user = Chater(id: userCredential.user!.uid, email: email);
+
+      _firestore
+          .collection("Users")
+          .doc(userCredential.user!.uid)
+          .set(user.toMap());
       return userCredential;
     } on FirebaseAuthException catch (e) {
       throw Exception(e.code);
@@ -38,10 +41,13 @@ class AuthService {
       UserCredential userCredential =
           await _auth.signInWithCredential(credential);
 
-      _firestore.collection("Users").doc(userCredential.user!.uid).set({
-        'uid': userCredential.user!.uid,
-        "email": userCredential.user!.email,
-      });
+      Chater user = Chater(
+          id: userCredential.user!.uid, email: userCredential.user!.email!);
+
+      _firestore
+          .collection("Users")
+          .doc(userCredential.user!.uid)
+          .set(user.toMap());
 
       return userCredential;
     } on FirebaseAuthException catch (e) {

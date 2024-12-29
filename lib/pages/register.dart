@@ -47,7 +47,7 @@ class Register extends StatelessWidget {
             Icon(
               Icons.message,
               size: 60,
-              color: Colors.green.shade600,
+              color: Colors.green.shade500,
             ),
             const SizedBox(height: 50),
             Text("Bir hesap oluşturalım size!",

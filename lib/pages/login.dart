@@ -43,7 +43,7 @@ class Login extends StatelessWidget {
             Icon(
               Icons.message,
               size: 60,
-              color: Colors.green.shade600,
+              color: Colors.green.shade500,
             ),
             const SizedBox(height: 50),
             Text("Hoş geldiniz, sohbete başlayalım!",
@@ -65,7 +65,7 @@ class Login extends StatelessWidget {
             MyButton(text: "Giriş yap", onTap: () => login(context)),
             const SizedBox(height: 10),
             SignInButton(
-              Buttons.Google, // Pre-styled Google button
+              Buttons.Google,
               onPressed: googleSignIn,
             ),
             const SizedBox(height: 25),
