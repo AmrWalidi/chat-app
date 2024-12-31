@@ -119,7 +119,7 @@ class _ChatState extends State<Chat> {
     );
   }
 
-  void deleteMessage(Map<String, dynamic> message) {
+  void deleteMessage(Map<String, dynamic> message) async {
     _chatServices.deleteMessage(message);
   }
 
@@ -173,44 +173,26 @@ class _ChatState extends State<Chat> {
     var aligment =
         isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
 
-    return Row(
-      mainAxisAlignment: aligment,
-      children: isCurrentUser
-          ? [
-              ChatBubble(
-                  message: data['message'], isCurrentUser: isCurrentUser),
-              GestureDetector(
-                onTap: () => _setEditedMessage(data),
-                child: Icon(
-                  Icons.edit,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: () => showDeleteMessage(context, data),
-                child: Icon(
-                  Icons.delete,
-                  size: 18,
-                ),
-              )
-            ]
-          : [
-              GestureDetector(
-                onTap: () => _messageController.text = data['message'],
-                child: Icon(
-                  Icons.edit,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Icon(
-                Icons.delete,
-                size: 18,
-              ),
-              ChatBubble(message: data['message'], isCurrentUser: isCurrentUser)
-            ],
-    );
+    return Row(mainAxisAlignment: aligment, children: [
+      ChatBubble(message: data['message'], isCurrentUser: isCurrentUser),
+      if (isCurrentUser) ...[
+        GestureDetector(
+          onTap: () => _setEditedMessage(data),
+          child: Icon(
+            Icons.edit,
+            size: 18,
+          ),
+        ),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: () => showDeleteMessage(context, data),
+          child: Icon(
+            Icons.delete,
+            size: 18,
+          ),
+        )
+      ]
+    ]);
   }
 
   Widget _buildMessageInput() {
