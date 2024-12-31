@@ -18,6 +18,8 @@ class Chat extends StatefulWidget {
 
 class _ChatState extends State<Chat> {
   final TextEditingController _messageController = TextEditingController();
+  Map<String, dynamic>? _editedMessage;
+  bool _isEditMessage = false;
 
   final _authSevices = AuthService();
   final _chatServices = ChatServices();
@@ -46,8 +48,13 @@ class _ChatState extends State<Chat> {
 
   final ScrollController _scrollController = ScrollController();
   void scrollDown() {
-    _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-        duration: Duration(seconds: 1), curve: Curves.fastOutSlowIn);
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   void sendMessage() async {
@@ -61,7 +68,60 @@ class _ChatState extends State<Chat> {
     scrollDown();
   }
 
-  void editMessage(String text) {}
+  void editMessage() async {
+    if (_messageController.text.isNotEmpty) {
+      _editedMessage?['message'] = _messageController.text;
+      await _chatServices.editMessage(_editedMessage!);
+      _resetEditMessage();
+    }
+  }
+
+  void _setEditedMessage(Map<String, dynamic> data) {
+    _messageController.text = data['message'];
+    _editedMessage = data;
+    setState(() {
+      _isEditMessage = true;
+    });
+  }
+
+  void _resetEditMessage() {
+    _messageController.clear();
+    _editedMessage = null;
+    setState(() {
+      _isEditMessage = false;
+    });
+  }
+
+  void showDeleteMessage(BuildContext context, Map<String, dynamic> message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Bu mesaj silinecek'),
+          content: Text('Mesajı silmek istediğinizden emin misiniz?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('iptal'),
+            ),
+            TextButton(
+              onPressed: () {
+                deleteMessage(message);
+                Navigator.of(context).pop();
+              },
+              child: Text('Sil', style: TextStyle(color: Colors.red.shade700)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void deleteMessage(Map<String, dynamic> message) {
+    _chatServices.deleteMessage(message);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,16 +180,19 @@ class _ChatState extends State<Chat> {
               ChatBubble(
                   message: data['message'], isCurrentUser: isCurrentUser),
               GestureDetector(
-                onTap: () => _messageController.text = data['message'],
+                onTap: () => _setEditedMessage(data),
                 child: Icon(
                   Icons.edit,
-                  size: 20,
+                  size: 18,
                 ),
               ),
               const SizedBox(width: 10),
-              Icon(
-                Icons.delete,
-                size: 20,
+              GestureDetector(
+                onTap: () => showDeleteMessage(context, data),
+                child: Icon(
+                  Icons.delete,
+                  size: 18,
+                ),
               )
             ]
           : [
@@ -137,13 +200,13 @@ class _ChatState extends State<Chat> {
                 onTap: () => _messageController.text = data['message'],
                 child: Icon(
                   Icons.edit,
-                  size: 20,
+                  size: 18,
                 ),
               ),
               const SizedBox(width: 10),
               Icon(
                 Icons.delete,
-                size: 20,
+                size: 18,
               ),
               ChatBubble(message: data['message'], isCurrentUser: isCurrentUser)
             ],
@@ -151,26 +214,43 @@ class _ChatState extends State<Chat> {
   }
 
   Widget _buildMessageInput() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 50.0),
-      child: Row(
-        children: [
-          Expanded(
-              child: MyTextField(
-            hinText: 'Bir mesaj Yazınız',
-            obscureText: false,
-            controller: _messageController,
-            focusNode: focusNode,
-          )),
-          Container(
-            decoration: BoxDecoration(
-                color: Colors.green.shade600, shape: BoxShape.circle),
-            margin: EdgeInsets.only(right: 25.0),
-            child: IconButton(
-                onPressed: sendMessage,
-                icon: Icon(Icons.send, color: Colors.white)),
-          )
-        ],
+    return WillPopScope(
+      onWillPop: () async {
+        bool pop = !_isEditMessage;
+
+        _resetEditMessage();
+        return pop;
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 50.0),
+        child: Row(
+          children: [
+            Expanded(
+                child: MyTextField(
+              hinText: 'Bir mesaj Yazınız',
+              obscureText: false,
+              controller: _messageController,
+              focusNode: focusNode,
+            )),
+            _isEditMessage
+                ? Container(
+                    decoration: BoxDecoration(
+                        color: Colors.green.shade600, shape: BoxShape.circle),
+                    margin: EdgeInsets.only(right: 25.0),
+                    child: IconButton(
+                        onPressed: editMessage,
+                        icon: Icon(Icons.check, color: Colors.white)),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                        color: Colors.green.shade600, shape: BoxShape.circle),
+                    margin: EdgeInsets.only(right: 25.0),
+                    child: IconButton(
+                        onPressed: sendMessage,
+                        icon: Icon(Icons.send, color: Colors.white)),
+                  )
+          ],
+        ),
       ),
     );
   }

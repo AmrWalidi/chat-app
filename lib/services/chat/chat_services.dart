@@ -54,5 +54,47 @@ class ChatServices {
         .snapshots();
   }
 
-  
+  Future<void> editMessage(Map<String, dynamic> message) async {
+    List<String> ids = [message['senderID'], message['recieverID']];
+    ids.sort();
+
+    String chatRoomID = ids.join("_");
+    var snapshot = await _firestore
+        .collection('chat_rooms')
+        .doc(chatRoomID)
+        .collection('messages')
+        .where('timestamp', isEqualTo: message['timestamp'])
+        .get();
+
+    var docId = snapshot.docs.first.id;
+    await _firestore
+        .collection('chat_rooms')
+        .doc(chatRoomID)
+        .collection('messages')
+        .doc(docId)
+        .update({
+      'message': message['message'],
+    });
+  }
+
+  Future<void> deleteMessage(Map<String, dynamic> message) async {
+    List<String> ids = [message['senderID'], message['recieverID']];
+    ids.sort();
+
+    String chatRoomID = ids.join("_");
+    var snapshot = await _firestore
+        .collection('chat_rooms')
+        .doc(chatRoomID)
+        .collection('messages')
+        .where('timestamp', isEqualTo: message['timestamp'])
+        .get();
+
+    var docId = snapshot.docs.first.id;
+    await _firestore
+        .collection('chat_rooms')
+        .doc(chatRoomID)
+        .collection('messages')
+        .doc(docId)
+        .delete();
+  }
 }
